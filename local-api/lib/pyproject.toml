@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "formlabs_local_api"
-version = "3.41.0"
-description = "PreForm API"
-authors = ["OpenAPI Generator Community <team@openapitools.org>"]
+version = "3.40.0"
+description = "Formlabs Local API"
+authors = ["Formlabs Support <team@openapitools.org>"]
 license = "NoLicense"
 readme = "README.md"
 repository = "https://github.com/GIT_USER_ID/GIT_REPO_ID"
-keywords = ["OpenAPI", "OpenAPI-Generator", "PreForm API"]
+keywords = ["OpenAPI", "OpenAPI-Generator", "Formlabs Local API"]
 include = ["formlabs_local_api/py.typed"]
 
 [tool.poetry.dependencies]

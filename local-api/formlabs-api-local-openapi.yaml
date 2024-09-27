@@ -1,9 +1,127 @@
 openapi: "3.0.2"
 info:
-  title: PreForm API
-  version: "3.40.0"
+  title: Formlabs Local API
+  version: 3.40.0
+  termsOfService: /formlabs-api-license-agreement.html
+  contact:
+    name: Formlabs Support
+    url: https://support.formlabs.com/
+  x-logo:
+    url: '/Formlabs-Logo-rgb-black.svg'
+    altText: Formlabs Logo
+  description: |
+    © 2024 Formlabs - All Rights Reserved
+
+    # Introduction
+    The Formlabs Local API is designed for integrations that want to automate
+    job preparation, getting local-network printer status, or send jobs to printers
+    without launching the PreForm graphical user interface. A server application
+    must be installed and run on a user's computer to use this API.
+
+    Example use cases:
+    - Scripted job preparation that takes a folder of models, sets up a print,
+      and uploads it to a printer without user input.
+    - Deep and custom integrations into 3D Modeling and Design software to
+      prepare print scenes beyond the scope of the PreForm Command Line Arguments.
+
+    This API uses RESTful principles. This means the API is organized around
+    resources and collections of resources. Resources and collections are each
+    available at their own URI. You can interact with these resources using
+    standard HTTP Methods on the resource's URI.
+
+    Example endpoint:
+    ```
+    GET http://localhost:44388/scene/
+    ```
+
+    Responses from the API server will be in JSON and are documented throughout
+    the reference docs. Eiger's API is described by an [OpenAPI Specification](https://spec.openapis.org/oas/v3.1.0).
+    This interactive documentation is automatically generated from the specification file.
+
+    # Technical Overview
+
+    ## PreFormServer Background Application
+    All Local API integrations involve starting the PreFormServer background
+    application to expose the HTTP API and then making HTTP API calls in your own code.
+    This application is like Formlab's regular PreForm job preparation application,
+    but it does not open a graphical window and interaction is done via HTTP API requests.
+    The PreFormServer application is supported on Windows and MacOS with separate
+    downloads for each Operating System. There is also experimental support for Linux
+    for running within a Docker container.
+
+    ## Making API Requests
+    The code to make HTTP API requests to a running PreFormServer can be written
+    directly in your integration code or by using a generated library that does
+    the API calls. The endpoints and format of the HTTP API are described on this
+    page and in the openapi.yaml file.  Formlabs provides an example [Python library](https://github.com/Formlabs/formlabs-api-python)
+    that handles the setup and request formatting.
+
+    ## Glossary
+    - **Scene**: The current state of a job that can be printed on a particular printer model.
+      This includes both the “Scene Type” and all of the currently loaded models and their support structures.
+    - **Scene Settings**: Printer type and material information of scene. Describes the
+      build platform size, the printer capabilities, and what material and print settings
+      it is set up to be printed with.
+
+    ## Stateful Interactions
+    The PreForm Server is stateful in that while it is running, it keeps a cache of the
+    current scene and requests will use the cached scene and possibly modify it.
+    For example, initially a scene may be empty and then if a load model request is made
+    then the cached scene will have one model loaded. Calling the load model requests
+    again will load another copy of the model resulting in two models in the cached scene.
+
+    ## Blocking Calls & Asynchronous Requests
+    Unless otherwise stated, API calls are blocking: the HTTP request will not return
+    until the operation has completed.  Some requests like running the auto support
+    action on a scene with many complicated models could take over 1 minute (depending
+    on computer resources). The Server has a timeout of 10 minutes for all requests.
+
+    Requests made asynchronous will use the last cached state. For example, if a “get scene”
+    request is made during a “auto support” request that has not finished, then the
+    “get scene” request will return data that will not include the auto support changes.
+
+    ## File Paths
+    When saving and loading files, the local API inputs expect full operating system paths
+    to local files on disk.
+
+    Correct file path:
+    - `C:\Projects\Models\part.stl`
+
+    Incorrect file paths:
+    - `.\Models\part.stl`
+    - `Part.stl`
+    - `https://filestorage.com/part.stl`
+
+    # Errors
+    Conventional HTTP response codes are used to indicate the success or failure of
+    an API request. In general: Codes in the 2xx range indicate success. Codes in
+    the 4xx range indicate an error that failed given the information provided.
+    Codes in the 5xx range indicate an error with Formlabs' servers.
+
+    # Security
+    The HTTP Server that PreForm uses to communicate is only exposed to the local
+    network of your computer and not to the public Internet, unless you have
+    configured your computer to expose the port running the PreForm Server to the Internet.
+
+    Some requests require an Internet connection, require Dashboard login, and
+    make web requests to perform their action (such as printing to a remote printer).
 servers:
   - url: http://localhost:44388
+tags:
+  - name: Devices
+    description: "Operations related to Formlabs devices"
+  - name: Modifying a Scene
+    description: "Operations related to modifying the scene"
+  - name: Getting Scene Information
+    description: "Operations related to getting information about a scene"
+  - name: Exporting
+  - name: Printing
+  - name: Authentication
+    description: "Operations related to authentication with Formlabs web services."
+  - name: Print Settings
+    description: "Operations related to getting available print settings."
+  - name: API Info
+    description: "Get information abou the API itself"
 components:
   schemas:
     ErrorModel:
@@ -105,16 +223,16 @@ components:
       type: string
       description: The units of the model
       enum:
-      - MILLIMETERS
-      - INCHES
+        - MILLIMETERS
+        - INCHES
     ImportUnitsModel:
       type: string
       description: The units of the model
       default: DETECTED
       enum:
-      - DETECTED
-      - MILLIMETERS
-      - INCHES
+        - DETECTED
+        - MILLIMETERS
+        - INCHES
     ModelProperties:
       type: object
       properties:
@@ -175,7 +293,7 @@ components:
           oneOf:
             - type: string
               enum:
-              - "ADAPTIVE"
+                - "ADAPTIVE"
             - type: number
               description: Layer thickness in millimeters
       required:
@@ -225,7 +343,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ModelProperties'
-        scene_type:
+        scene_settings:
           $ref: '#/components/schemas/SceneTypeModel'
         material_usage:
           $ref: '#/components/schemas/MaterialUsageModel'
@@ -237,15 +355,15 @@ components:
       description: The behavior to use when loading a broken model
       default: "IGNORE"
       enum:
-      - "REPAIR"
-      - "ERROR"
-      - "IGNORE"
+        - "REPAIR"
+        - "ERROR"
+        - "IGNORE"
     ModelsSelectionModel:
       oneOf:
         - type: string
           title: Select all models
           enum:
-          - "ALL"
+            - "ALL"
         - type: array
           title: Apply to a list of specific models
           items:
@@ -618,6 +736,11 @@ components:
 paths:
   /:
     get:
+      summary: Get API Version
+      operationId: getApiVersion
+      description: "Get the version of the API"
+      tags:
+        - "API Info"
       responses:
         "200":
           description: API version
@@ -630,7 +753,11 @@ paths:
                     type: string
   /login/:
     post:
+      summary: Login
+      operationId: login
       description: "Log in to Formlabs Web Services"
+      tags:
+        - "Authentication"
       requestBody:
         description: User credentials
         required: true
@@ -680,6 +807,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/:
     get:
+      summary: Get Scene
+      operationId: getScene
+      description: "Get data about the current scene"
+      tags:
+        - "Getting Scene Information"
       responses:
         "200":
           description: Scene description
@@ -688,20 +820,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/SceneModel'
     post:
+      summary: Create Scene
+      operationId: createScene
       description: "Create a new scene"
-      parameters: []
+      tags:
+        - "Modifying a Scene"
       requestBody:
-        description: Create a scene with a given printing setup
+        description: >
+          Create a scene with a given printing setup.
+
+          For a full list of possible settings, call the GET /list-materials/ endpoint
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SceneTypeModel'
-            example:
-              machine_type: "FS30-1-0"
-              material_code: FLP11B01
-              print_setting: DEFAULT
-              layer_thickness_mm: "0.11"
+            examples:
+              Form 4 Black V5:
+                value:
+                  machine_type: "FORM-4-0"
+                  material_code: "FLGPBK05"
+                  print_setting: "DEFAULT"
+                  layer_thickness_mm: 0.025
+              Fuse 1+ Nylon 11:
+                value:
+                  machine_type: "FS30-1-0"
+                  material_code: FLP11B01
+                  print_setting: DEFAULT
+                  layer_thickness_mm: 0.11
       responses:
         "200":
           description: Success
@@ -717,10 +863,13 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /load-form/:
     post:
-      description: "Load a file into the current scene"
-      parameters: []
+      summary: Load .form file
+      operationId: loadFormFile
+      description: "Load a .form file and create a new scene from it"
+      tags:
+        - "Modifying a Scene"
       requestBody:
-        description: Full path to the file to load
+        description: Full path to the .form file to load
         required: true
         content:
           application/json:
@@ -742,8 +891,11 @@ paths:
                 $ref: '#/components/schemas/SceneModel'
   /scene/save-form/:
     post:
+      summary: Save .form file
+      operationId: saveFormFile
       description: "Save the current scene to a .FORM file"
-      parameters: []
+      tags:
+        - "Exporting"
       requestBody:
         description: Full path where the file should be saved
         required: true
@@ -769,8 +921,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/save-screenshot/:
     post:
-      description: "Save a screenshot the current scene."
-      parameters: []
+      summary: Save screenshot file
+      operationId: saveScreenshot
+      description: "Save a screenshot of the current scene."
+      tags:
+        - "Exporting"
       requestBody:
         description: Full path where the image should be saved
         required: true
@@ -789,9 +944,9 @@ paths:
                   type: string
                   description: The type of view to use when taking the screenshot
                   enum:
-                  - "ZOOM_ON_MODELS"
-                  - "FULL_BUILD_VOLUME"
-                  - "FULL_PLATFORM_WIDTH"
+                    - "ZOOM_ON_MODELS"
+                    - "FULL_BUILD_VOLUME"
+                    - "FULL_PLATFORM_WIDTH"
                   default: "ZOOM_ON_MODELS"
                 models:
                   $ref: '#/components/schemas/ModelsSelectionModel'
@@ -815,7 +970,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/models/{id}/:
     get:
+      summary: Get model
+      operationId: getModel
       description: "Get a model's properties"
+      tags:
+        - "Getting Scene Information"
       parameters:
         - name: id
           in: path
@@ -837,7 +996,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     post:
+      summary: Update model
+      operationId: updateModel
       description: "Update a model's properties"
+      tags:
+        - "Modifying a Scene"
       parameters:
         - name: id
           in: path
@@ -895,7 +1058,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
     delete:
-      description: "Delete a model into the current scene"
+      summary: Delete model
+      operationId: deleteModel
+      description: "Delete a model from the current scene"
+      tags:
+        - "Modifying a Scene"
       parameters:
         - name: id
           in: path
@@ -908,7 +1075,11 @@ paths:
           description: OK
   /scene/models/{id}/duplicate/:
     post:
+      summary: Duplicate model
+      operationId: duplicateModel
       description: "Duplicate a model"
+      tags:
+        - "Modifying a Scene"
       parameters:
         - name: id
           in: path
@@ -941,7 +1112,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/models/{id}/replace/:
     post:
-      description: "Replace a model currently in the scene with a new model, copying the existing models setup"
+      summary: Replace model
+      operationId: replaceModel
+      description: "Replace a model currently in the scene with a new model, copying the existing models setup and supports"
+      tags:
+        - "Modifying a Scene"
       parameters:
         - name: id
           in: path
@@ -983,8 +1158,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/import-model/:
     post:
-      description: "Load a model into the current scene"
-      parameters: []
+      summary: Import model
+      operationId: importModel
+      description: "Import a model into the current scene"
+      tags:
+        - "Modifying a Scene"
       requestBody:
         required: true
         content:
@@ -1046,8 +1224,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/print/:
     post:
-      description: "Slice and upload"
-      parameters: []
+      summary: Print
+      operationId: print
+      description: "Upload the current scene to a printer or Fleet Control"
+      tags:
+        - "Printing"
       requestBody:
         required: true
         content:
@@ -1056,20 +1237,16 @@ paths:
               type: object
               required:
                 - printer
+                - job_name
               properties:
                 printer:
                   type: string
                   description: Printer serial name, IP address, or Fleet Control Queue ID
                 job_name:
                   type: string
-            examples:
-              Minimal:
-                value:
-                  printer: "192.168.1.2"
-              Full:
-                value:
-                  printer: "TestyTest"
-                  job_name: "Test Job"
+            example:
+              printer: "10.35.15.12"
+              job_name: "Test Job"
       responses:
         "200":
           description: OK
@@ -1089,8 +1266,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/auto-orient/:
     post:
+      summary: Auto Orient
+      operationId: autoOrient
       description: "Run auto orient operation"
-      parameters: []
+      tags:
+        - "Modifying a Scene"
       requestBody:
         description: Models to run the auto orient operation on
         required: true
@@ -1118,7 +1298,7 @@ paths:
                     mode:
                       type: string
                       enum:
-                      - "DENTAL"
+                        - "DENTAL"
                     tilt:
                       type: integer
                       description: Degrees of tilt. Only applies to the DENTAL mode
@@ -1146,8 +1326,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/auto-support/:
     post:
+      summary: Auto Support
+      operationId: autoSupport
       description: "Run auto support operation"
-      parameters: []
+      tags:
+        - "Modifying a Scene"
       requestBody:
         description: Models to run the auto support operation on
         required: true
@@ -1164,9 +1347,9 @@ paths:
                   type: string
                   description: The type of raft to apply to the models
                   enum:
-                  - "FULL_RAFT"
-                  - "MINI_RAFTS"
-                  - "NONE"
+                    - "FULL_RAFT"
+                    - "MINI_RAFTS"
+                    - "NONE"
                 raft_label_enabled:
                   type: boolean
                   description: Whether to enable raft labeling
@@ -1219,8 +1402,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/auto-layout/:
     post:
-      description: "Run auto layout operation"
-      parameters: []
+      summary: Auto Layout
+      operationId: autoLayout
+      description: "Run auto layout operation. Only applies to SLA-type scenes like the Form 4"
+      tags:
+        - "Modifying a Scene"
       requestBody:
         description: Models to run the auto layout operation on
         required: true
@@ -1275,8 +1461,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/auto-pack/:
     post:
-      description: "Run auto pack operation"
-      parameters: []
+      summary: Auto Pack
+      operationId: autoPack
+      description: "Run auto pack operation. Only applies to SLS-type scenes like the Fuse 1+"
+      tags:
+        - "Modifying a Scene"
       requestBody:
         description: Auto pack parameters
         required: true
@@ -1307,7 +1496,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/print-validation/:
     get:
+      summary: Get Print Validation
+      operationId: getPrintValidation
       description: "Calculate the print validation for the current scene"
+      tags:
+        - "Getting Scene Information"
       responses:
         "200":
           description: Success
@@ -1323,7 +1516,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /scene/estimate-print-time/:
     post:
-      description: "Calculate the estimate print time for the current scene"
+      summary: Estimate Print Time
+      operationId: estimatePrintTime
+      description: "Calculate the estimated print time for the current scene"
+      tags:
+        - "Getting Scene Information"
       responses:
         "200":
           description: Success
@@ -1339,7 +1536,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /devices/:
     get:
+      summary: Get Devices
+      operationId: getDevices
       description: "List of previously discovered device statuses"
+      tags:
+        - "Devices"
       responses:
         "200":
           description: OK
@@ -1363,7 +1564,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /devices/{id}/:
     get:
-      description: "Get device status"
+      summary: Get Device
+      operationId: getDevice
+      description: "Get a previously discovered device's status"
+      tags:
+        - "Devices"
       parameters:
         - name: id
           in: path
@@ -1386,7 +1591,11 @@ paths:
                 $ref: '#/components/schemas/ErrorModel'
   /discover-devices/:
     post:
+      summary: Discover Devices
+      operationId: discoverDevices
       description: "Discover new devices on the network"
+      tags:
+        - "Devices"
       requestBody:
         required: true
         content:
@@ -1428,3 +1637,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorModel'
+  /list-materials/:
+    get:
+      summary: List Materials
+      operationId: listMaterials
+      description: >
+        List all available materials and material settings by printer type.
+
+        The returned JSON has 3 layers: Printer types (e.g. "Form 4"), Materials (e.g. "Black V5"),
+        and Material Setting (e.g. "0.025mm" or "0.100mm (Legacy)"). These "label" strings at each level
+        are the preferred way of referring to that printer types, materials, and settings. They can
+        presented in a UI as a 3-level dropdown menu, or a flat filtered list. This list is static
+        (it will not change for a given version of the PreFormServer executable).
+
+        Each value has `scene_settings` with all data needed to create a new scene. It can be passed
+        directly to a /scene/ POST to create a scene for that printer, material, and materialSettings.
+      tags:
+        - "Print Settings"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  printer_types:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        label:
+                          type: string
+                        materials:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              label:
+                                type: string
+                              material_settings:
+                                type: array
+                                items:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type: string
+                                    scene_settings:
+                                      $ref: '#/components/schemas/SceneTypeModel'

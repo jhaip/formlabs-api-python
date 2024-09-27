@@ -17,7 +17,7 @@ class PreFormApi:
         self.client = formlabs.ApiClient(
             formlabs.Configuration(host=f"http://localhost:{preform_port}")
         )
-        self.api = formlabs.DefaultApi(self.client)
+        self.api = formlabs.UnifiedApi(self.client)
 
     @staticmethod
     def start_preform_sync(pathToPreformServer=None, preform_port=44388):

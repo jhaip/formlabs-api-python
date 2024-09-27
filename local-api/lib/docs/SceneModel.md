@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **models** | [**List[ModelProperties]**](ModelProperties.md) |  | [optional] 
-**scene_type** | [**SceneTypeModel**](SceneTypeModel.md) |  | [optional] 
+**scene_settings** | [**SceneTypeModel**](SceneTypeModel.md) |  | [optional] 
 **material_usage** | [**MaterialUsageModel**](MaterialUsageModel.md) |  | [optional] 
 **layer_count** | **int** | The number of layers in the scene | [optional] 
 
