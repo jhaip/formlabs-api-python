@@ -204,6 +204,7 @@ Class | Method | HTTP request | Description
 *DevicesApi* | [**get_device**](docs/DevicesApi.md#get_device) | **GET** /devices/{id}/ | Get Device
 *DevicesApi* | [**get_devices**](docs/DevicesApi.md#get_devices) | **GET** /devices/ | Get Devices
 *ExportingApi* | [**save_form_file**](docs/ExportingApi.md#save_form_file) | **POST** /scene/save-form/ | Save .form file
+*ExportingApi* | [**save_fps_file**](docs/ExportingApi.md#save_fps_file) | **POST** /scene/save-fps-file/ | Save FPS file
 *ExportingApi* | [**save_screenshot**](docs/ExportingApi.md#save_screenshot) | **POST** /scene/save-screenshot/ | Save screenshot file
 *GettingSceneInformationApi* | [**estimate_print_time**](docs/GettingSceneInformationApi.md#estimate_print_time) | **POST** /scene/estimate-print-time/ | Estimate Print Time
 *GettingSceneInformationApi* | [**get_model**](docs/GettingSceneInformationApi.md#get_model) | **GET** /scene/models/{id}/ | Get model
@@ -220,6 +221,7 @@ Class | Method | HTTP request | Description
 *ModifyingASceneApi* | [**load_form_file**](docs/ModifyingASceneApi.md#load_form_file) | **POST** /load-form/ | Load .form file
 *ModifyingASceneApi* | [**replace_model**](docs/ModifyingASceneApi.md#replace_model) | **POST** /scene/models/{id}/replace/ | Replace model
 *ModifyingASceneApi* | [**update_model**](docs/ModifyingASceneApi.md#update_model) | **POST** /scene/models/{id}/ | Update model
+*ModifyingASceneApi* | [**update_scene**](docs/ModifyingASceneApi.md#update_scene) | **PUT** /scene/ | Update Scene
 *PrintSettingsApi* | [**list_materials**](docs/PrintSettingsApi.md#list_materials) | **GET** /list-materials/ | List Materials
 *PrintingApi* | [**call_print**](docs/PrintingApi.md#call_print) | **POST** /scene/print/ | Print
 *RemoteAccessApi* | [**call_print**](docs/RemoteAccessApi.md#call_print) | **POST** /scene/print/ | Print
@@ -246,6 +248,7 @@ Class | Method | HTTP request | Description
  - [ErrorModelError](docs/ErrorModelError.md)
  - [EstimatedPrintTimeModel](docs/EstimatedPrintTimeModel.md)
  - [EulerAnglesModel](docs/EulerAnglesModel.md)
+ - [FPSFile](docs/FPSFile.md)
  - [FleetControlPrinterGroup](docs/FleetControlPrinterGroup.md)
  - [Form2Printer](docs/Form2Printer.md)
  - [Form3Printer](docs/Form3Printer.md)
@@ -263,6 +266,8 @@ Class | Method | HTTP request | Description
  - [ListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSettingsInner](docs/ListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSettingsInner.md)
  - [LoadFormFileRequest](docs/LoadFormFileRequest.md)
  - [LoginRequest](docs/LoginRequest.md)
+ - [Manual](docs/Manual.md)
+ - [ManualLayerThicknessMm](docs/ManualLayerThicknessMm.md)
  - [MaterialUsageModel](docs/MaterialUsageModel.md)
  - [ModelProperties](docs/ModelProperties.md)
  - [ModelPropertiesBoundingBox](docs/ModelPropertiesBoundingBox.md)
@@ -277,11 +282,11 @@ Class | Method | HTTP request | Description
  - [ReplaceModelRequest](docs/ReplaceModelRequest.md)
  - [SLA](docs/SLA.md)
  - [SLS](docs/SLS.md)
+ - [SaveFpsFileRequest](docs/SaveFpsFileRequest.md)
  - [SaveScreenshotRequest](docs/SaveScreenshotRequest.md)
  - [SceneModel](docs/SceneModel.md)
  - [ScenePositionModel](docs/ScenePositionModel.md)
  - [SceneTypeModel](docs/SceneTypeModel.md)
- - [SceneTypeModelLayerThicknessMm](docs/SceneTypeModelLayerThicknessMm.md)
  - [TransformMatrixModel](docs/TransformMatrixModel.md)
  - [UnitsModel](docs/UnitsModel.md)
  - [UpdateModelRequest](docs/UpdateModelRequest.md)

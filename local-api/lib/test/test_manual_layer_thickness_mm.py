@@ -14,10 +14,10 @@
 
 import unittest
 
-from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from formlabs_local_api.models.manual_layer_thickness_mm import ManualLayerThicknessMm
 
-class TestSceneTypeModel(unittest.TestCase):
-    """SceneTypeModel unit test stubs"""
+class TestManualLayerThicknessMm(unittest.TestCase):
+    """ManualLayerThicknessMm unit test stubs"""
 
     def setUp(self):
         pass
@@ -25,34 +25,24 @@ class TestSceneTypeModel(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> SceneTypeModel:
-        """Test SceneTypeModel
+    def make_instance(self, include_optional) -> ManualLayerThicknessMm:
+        """Test ManualLayerThicknessMm
             include_optional is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `SceneTypeModel`
+        # uncomment below to create an instance of `ManualLayerThicknessMm`
         """
-        model = SceneTypeModel()
+        model = ManualLayerThicknessMm()
         if include_optional:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                print_setting = '',
-                layer_thickness_mm = None,
-                custom_print_setting_id = '',
-                fps_file = ''
+            return ManualLayerThicknessMm(
             )
         else:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                layer_thickness_mm = None,
-                fps_file = '',
+            return ManualLayerThicknessMm(
         )
         """
 
-    def testSceneTypeModel(self):
-        """Test SceneTypeModel"""
+    def testManualLayerThicknessMm(self):
+        """Test ManualLayerThicknessMm"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

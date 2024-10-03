@@ -15,6 +15,7 @@ Method | HTTP request | Description
 [**load_form_file**](ModifyingASceneApi.md#load_form_file) | **POST** /load-form/ | Load .form file
 [**replace_model**](ModifyingASceneApi.md#replace_model) | **POST** /scene/models/{id}/replace/ | Replace model
 [**update_model**](ModifyingASceneApi.md#update_model) | **POST** /scene/models/{id}/ | Update model
+[**update_scene**](ModifyingASceneApi.md#update_scene) | **PUT** /scene/ | Update Scene
 
 
 # **auto_layout**
@@ -759,6 +760,76 @@ Name | Type | Description  | Notes
 ### Return type
 
 void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **update_scene**
+> SceneModel update_scene(scene_type_model)
+
+Update Scene
+
+Update the scene's properties
+
+### Example
+
+
+```python
+import formlabs_local_api
+from formlabs_local_api.models.scene_model import SceneModel
+from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from formlabs_local_api.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost:44388
+# See configuration.py for a list of all supported configuration parameters.
+configuration = formlabs_local_api.Configuration(
+    host = "http://localhost:44388"
+)
+
+
+# Enter a context with an instance of the API client
+with formlabs_local_api.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = formlabs_local_api.ModifyingASceneApi(api_client)
+    scene_type_model = {"machine_type":"FORM-4-0","material_code":"FLGPBK05","print_setting":"DEFAULT","layer_thickness_mm":0.025} # SceneTypeModel | 
+
+    try:
+        # Update Scene
+        api_response = api_instance.update_scene(scene_type_model)
+        print("The response of ModifyingASceneApi->update_scene:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling ModifyingASceneApi->update_scene: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **scene_type_model** | [**SceneTypeModel**](SceneTypeModel.md)|  | 
+
+### Return type
+
+[**SceneModel**](SceneModel.md)
 
 ### Authorization
 

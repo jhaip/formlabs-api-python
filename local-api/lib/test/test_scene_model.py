@@ -62,11 +62,7 @@ class TestSceneModel(unittest.TestCase):
                         raw_mesh_hash = '', 
                         canonical_model_hash = '', )
                     ],
-                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel(
-                    machine_type = '', 
-                    material_code = '', 
-                    print_setting = '', 
-                    layer_thickness_mm = null, ),
+                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel(),
                 material_usage = None,
                 layer_count = 56
             )

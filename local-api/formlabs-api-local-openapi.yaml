@@ -299,29 +299,44 @@ components:
           description: The hash of the mesh data and its transform (position, orientation, and scale)
     SceneTypeModel:
       type: object
-      properties:
-        machine_type:
-          type: string
-          description: The machine type of the scene
-        material_code:
-          type: string
-          description: The material code of the scene
-        print_setting:
-          type: string
-          description: The print setting of the scene
-        layer_thickness_mm:
-          description: The slice thickness of the scene
-          oneOf:
-            - type: string
-              enum:
-                - "ADAPTIVE"
-            - type: number
-              description: Layer thickness in millimeters
-      required:
-        - machine_type
-        - material_code
-        - layer_thickness_mm
-      additionalProperties: false
+      oneOf:
+        - type: object
+          title: "Manual"
+          properties:
+            machine_type:
+              type: string
+              description: The machine type of the scene
+            material_code:
+              type: string
+              description: The material code of the scene
+            print_setting:
+              type: string
+              description: The print setting of the scene
+            layer_thickness_mm:
+              description: The slice thickness of the scene
+              oneOf:
+                - type: string
+                  enum:
+                    - "ADAPTIVE"
+                - type: number
+                  description: Layer thickness in millimeters
+            custom_print_setting_id:
+              type: string
+              description: The ID of the custom print setting used, if any.
+          required:
+            - machine_type
+            - material_code
+            - layer_thickness_mm
+          additionalProperties: false
+        - type: object
+          title: "FPS File"
+          properties:
+            fps_file:
+              type: string
+              description: The full path to the .FPS file
+          required:
+            - fps_file
+          additionalProperties: false
     MaterialUsageModel:
       oneOf:
         - type: object
@@ -869,6 +884,50 @@ paths:
                   material_code: FLP11B01
                   print_setting: DEFAULT
                   layer_thickness_mm: 0.11
+              FPS file:
+                value:
+                  fps_file: "C:\\Users\\user\\Desktop\\test.fps"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SceneModel'
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+    put:
+      summary: Update Scene
+      operationId: updateScene
+      description: "Update the scene's properties"
+      tags:
+        - "Modifying a Scene"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SceneTypeModel'
+            examples:
+              Form 4 Black V5:
+                value:
+                  machine_type: "FORM-4-0"
+                  material_code: "FLGPBK05"
+                  print_setting: "DEFAULT"
+                  layer_thickness_mm: 0.025
+              Fuse 1+ Nylon 11:
+                value:
+                  machine_type: "FS30-1-0"
+                  material_code: FLP11B01
+                  print_setting: DEFAULT
+                  layer_thickness_mm: 0.11
+              FPS file:
+                value:
+                  fps_file: "C:\\Users\\user\\Desktop\\test.fps"
       responses:
         "200":
           description: Success
@@ -980,6 +1039,40 @@ paths:
                   file: "C:\\Users\\user\\Desktop\\screenshot.png"
                   view_type: "FULL_BUILD_VOLUME"
                   models: ["0000537c-9ae2-426a-82ee-a007191a8fb5"]
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorModel'
+  /scene/save-fps-file/:
+    post:
+      summary: Save FPS file
+      operationId: saveFpsFile
+      description: "Save the print settings of the current scene to a .fps file"
+      tags:
+        - "Exporting"
+      requestBody:
+        description: Full path where the FPS file should be saved
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  description: The file path to save the .fps file to
+                  pattern: "^.*\\.fps$"
+            examples:
+              Minimal:
+                value:
+                  file: "C:\\Users\\user\\Desktop\\custom-grey.fps"
       responses:
         "200":
           description: Success

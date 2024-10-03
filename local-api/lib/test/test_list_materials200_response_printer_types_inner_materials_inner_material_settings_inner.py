@@ -36,11 +36,7 @@ class TestListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSetting
         if include_optional:
             return ListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSettingsInner(
                 label = '',
-                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel(
-                    machine_type = '', 
-                    material_code = '', 
-                    print_setting = '', 
-                    layer_thickness_mm = null, )
+                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel()
             )
         else:
             return ListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSettingsInner(

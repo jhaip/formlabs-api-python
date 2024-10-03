@@ -23,6 +23,7 @@ docs/ErrorModelError.md
 docs/EstimatedPrintTimeModel.md
 docs/EulerAnglesModel.md
 docs/ExportingApi.md
+docs/FPSFile.md
 docs/FleetControlPrinterGroup.md
 docs/Form2Printer.md
 docs/Form3Printer.md
@@ -41,6 +42,8 @@ docs/ListMaterials200ResponsePrinterTypesInnerMaterialsInner.md
 docs/ListMaterials200ResponsePrinterTypesInnerMaterialsInnerMaterialSettingsInner.md
 docs/LoadFormFileRequest.md
 docs/LoginRequest.md
+docs/Manual.md
+docs/ManualLayerThicknessMm.md
 docs/MaterialUsageModel.md
 docs/ModelProperties.md
 docs/ModelPropertiesBoundingBox.md
@@ -59,11 +62,11 @@ docs/ReplaceModel200Response.md
 docs/ReplaceModelRequest.md
 docs/SLA.md
 docs/SLS.md
+docs/SaveFpsFileRequest.md
 docs/SaveScreenshotRequest.md
 docs/SceneModel.md
 docs/ScenePositionModel.md
 docs/SceneTypeModel.md
-docs/SceneTypeModelLayerThicknessMm.md
 docs/TransformMatrixModel.md
 docs/UnitsModel.md
 docs/UpdateModelRequest.md
@@ -106,6 +109,7 @@ formlabs_local_api/models/form2_printer.py
 formlabs_local_api/models/form3_printer.py
 formlabs_local_api/models/form4_printer.py
 formlabs_local_api/models/form4_printer_cartridge_data_value.py
+formlabs_local_api/models/fps_file.py
 formlabs_local_api/models/fuse11_printer.py
 formlabs_local_api/models/generic_device.py
 formlabs_local_api/models/get_api_version200_response.py
@@ -118,6 +122,8 @@ formlabs_local_api/models/list_materials200_response_printer_types_inner_materia
 formlabs_local_api/models/list_materials200_response_printer_types_inner_materials_inner_material_settings_inner.py
 formlabs_local_api/models/load_form_file_request.py
 formlabs_local_api/models/login_request.py
+formlabs_local_api/models/manual.py
+formlabs_local_api/models/manual_layer_thickness_mm.py
 formlabs_local_api/models/material_usage_model.py
 formlabs_local_api/models/model_properties.py
 formlabs_local_api/models/model_properties_bounding_box.py
@@ -130,11 +136,11 @@ formlabs_local_api/models/print_validation_result_model_per_model_results_value.
 formlabs_local_api/models/repair_behavior_model.py
 formlabs_local_api/models/replace_model200_response.py
 formlabs_local_api/models/replace_model_request.py
+formlabs_local_api/models/save_fps_file_request.py
 formlabs_local_api/models/save_screenshot_request.py
 formlabs_local_api/models/scene_model.py
 formlabs_local_api/models/scene_position_model.py
 formlabs_local_api/models/scene_type_model.py
-formlabs_local_api/models/scene_type_model_layer_thickness_mm.py
 formlabs_local_api/models/sla.py
 formlabs_local_api/models/sls.py
 formlabs_local_api/models/transform_matrix_model.py
@@ -175,6 +181,7 @@ test/test_form2_printer.py
 test/test_form3_printer.py
 test/test_form4_printer.py
 test/test_form4_printer_cartridge_data_value.py
+test/test_fps_file.py
 test/test_fuse11_printer.py
 test/test_generic_device.py
 test/test_get_api_version200_response.py
@@ -188,6 +195,8 @@ test/test_list_materials200_response_printer_types_inner_materials_inner.py
 test/test_list_materials200_response_printer_types_inner_materials_inner_material_settings_inner.py
 test/test_load_form_file_request.py
 test/test_login_request.py
+test/test_manual.py
+test/test_manual_layer_thickness_mm.py
 test/test_material_usage_model.py
 test/test_model_properties.py
 test/test_model_properties_bounding_box.py
@@ -204,11 +213,11 @@ test/test_remote_access_api.py
 test/test_repair_behavior_model.py
 test/test_replace_model200_response.py
 test/test_replace_model_request.py
+test/test_save_fps_file_request.py
 test/test_save_screenshot_request.py
 test/test_scene_model.py
 test/test_scene_position_model.py
 test/test_scene_type_model.py
-test/test_scene_type_model_layer_thickness_mm.py
 test/test_sla.py
 test/test_sls.py
 test/test_transform_matrix_model.py

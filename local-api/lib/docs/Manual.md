@@ -1,4 +1,4 @@
-# SceneTypeModel
+# Manual
 
 
 ## Properties
@@ -10,24 +10,23 @@ Name | Type | Description | Notes
 **print_setting** | **str** | The print setting of the scene | [optional] 
 **layer_thickness_mm** | [**ManualLayerThicknessMm**](ManualLayerThicknessMm.md) |  | 
 **custom_print_setting_id** | **str** | The ID of the custom print setting used, if any. | [optional] 
-**fps_file** | **str** | The full path to the .FPS file | 
 
 ## Example
 
 ```python
-from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from formlabs_local_api.models.manual import Manual
 
 # TODO update the JSON string below
 json = "{}"
-# create an instance of SceneTypeModel from a JSON string
-scene_type_model_instance = SceneTypeModel.from_json(json)
+# create an instance of Manual from a JSON string
+manual_instance = Manual.from_json(json)
 # print the JSON string representation of the object
-print(SceneTypeModel.to_json())
+print(Manual.to_json())
 
 # convert the object into a dict
-scene_type_model_dict = scene_type_model_instance.to_dict()
-# create an instance of SceneTypeModel from a dict
-scene_type_model_from_dict = SceneTypeModel.from_dict(scene_type_model_dict)
+manual_dict = manual_instance.to_dict()
+# create an instance of Manual from a dict
+manual_from_dict = Manual.from_dict(manual_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

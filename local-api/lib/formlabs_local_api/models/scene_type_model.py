@@ -13,85 +13,125 @@
 
 
 from __future__ import annotations
-import pprint
-import re  # noqa: F401
 import json
+import pprint
+from pydantic import BaseModel, ConfigDict, Field, StrictStr, ValidationError, field_validator
+from typing import Any, List, Optional
+from formlabs_local_api.models.fps_file import FPSFile
+from formlabs_local_api.models.manual import Manual
+from pydantic import StrictStr, Field
+from typing import Union, List, Set, Optional, Dict
+from typing_extensions import Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional
-from formlabs_local_api.models.scene_type_model_layer_thickness_mm import SceneTypeModelLayerThicknessMm
-from typing import Optional, Set
-from typing_extensions import Self
+SCENETYPEMODEL_ONE_OF_SCHEMAS = ["FPSFile", "Manual"]
 
 class SceneTypeModel(BaseModel):
     """
     SceneTypeModel
-    """ # noqa: E501
-    machine_type: StrictStr = Field(description="The machine type of the scene")
-    material_code: StrictStr = Field(description="The material code of the scene")
-    print_setting: Optional[StrictStr] = Field(default=None, description="The print setting of the scene")
-    layer_thickness_mm: SceneTypeModelLayerThicknessMm
-    __properties: ClassVar[List[str]] = ["machine_type", "material_code", "print_setting", "layer_thickness_mm"]
+    """
+    # data type: Manual
+    oneof_schema_1_validator: Optional[Manual] = None
+    # data type: FPSFile
+    oneof_schema_2_validator: Optional[FPSFile] = None
+    actual_instance: Optional[Union[FPSFile, Manual]] = None
+    one_of_schemas: Set[str] = { "FPSFile", "Manual" }
 
     model_config = ConfigDict(
-        populate_by_name=True,
         validate_assignment=True,
         protected_namespaces=(),
     )
 
 
-    def to_str(self) -> str:
-        """Returns the string representation of the model using alias"""
-        return pprint.pformat(self.model_dump(by_alias=True))
+    def __init__(self, *args, **kwargs) -> None:
+        if args:
+            if len(args) > 1:
+                raise ValueError("If a position argument is used, only 1 is allowed to set `actual_instance`")
+            if kwargs:
+                raise ValueError("If a position argument is used, keyword arguments cannot be used.")
+            super().__init__(actual_instance=args[0])
+        else:
+            super().__init__(**kwargs)
+
+    @field_validator('actual_instance')
+    def actual_instance_must_validate_oneof(cls, v):
+        instance = SceneTypeModel.model_construct()
+        error_messages = []
+        match = 0
+        # validate data type: Manual
+        if not isinstance(v, Manual):
+            error_messages.append(f"Error! Input type `{type(v)}` is not `Manual`")
+        else:
+            match += 1
+        # validate data type: FPSFile
+        if not isinstance(v, FPSFile):
+            error_messages.append(f"Error! Input type `{type(v)}` is not `FPSFile`")
+        else:
+            match += 1
+        if match > 1:
+            # more than 1 match
+            raise ValueError("Multiple matches found when setting `actual_instance` in SceneTypeModel with oneOf schemas: FPSFile, Manual. Details: " + ", ".join(error_messages))
+        elif match == 0:
+            # no match
+            raise ValueError("No match found when setting `actual_instance` in SceneTypeModel with oneOf schemas: FPSFile, Manual. Details: " + ", ".join(error_messages))
+        else:
+            return v
+
+    @classmethod
+    def from_dict(cls, obj: Union[str, Dict[str, Any]]) -> Self:
+        return cls.from_json(json.dumps(obj))
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Self:
+        """Returns the object represented by the json string"""
+        instance = cls.model_construct()
+        error_messages = []
+        match = 0
+
+        # deserialize data into Manual
+        try:
+            instance.actual_instance = Manual.from_json(json_str)
+            match += 1
+        except (ValidationError, ValueError) as e:
+            error_messages.append(str(e))
+        # deserialize data into FPSFile
+        try:
+            instance.actual_instance = FPSFile.from_json(json_str)
+            match += 1
+        except (ValidationError, ValueError) as e:
+            error_messages.append(str(e))
+
+        if match > 1:
+            # more than 1 match
+            raise ValueError("Multiple matches found when deserializing the JSON string into SceneTypeModel with oneOf schemas: FPSFile, Manual. Details: " + ", ".join(error_messages))
+        elif match == 0:
+            # no match
+            raise ValueError("No match found when deserializing the JSON string into SceneTypeModel with oneOf schemas: FPSFile, Manual. Details: " + ", ".join(error_messages))
+        else:
+            return instance
 
     def to_json(self) -> str:
-        """Returns the JSON representation of the model using alias"""
-        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
-        return json.dumps(self.to_dict())
+        """Returns the JSON representation of the actual instance"""
+        if self.actual_instance is None:
+            return "null"
 
-    @classmethod
-    def from_json(cls, json_str: str) -> Optional[Self]:
-        """Create an instance of SceneTypeModel from a JSON string"""
-        return cls.from_dict(json.loads(json_str))
+        if hasattr(self.actual_instance, "to_json") and callable(self.actual_instance.to_json):
+            return self.actual_instance.to_json()
+        else:
+            return json.dumps(self.actual_instance)
 
-    def to_dict(self) -> Dict[str, Any]:
-        """Return the dictionary representation of the model using alias.
-
-        This has the following differences from calling pydantic's
-        `self.model_dump(by_alias=True)`:
-
-        * `None` is only added to the output dict for nullable fields that
-          were set at model initialization. Other fields with value `None`
-          are ignored.
-        """
-        excluded_fields: Set[str] = set([
-        ])
-
-        _dict = self.model_dump(
-            by_alias=True,
-            exclude=excluded_fields,
-            exclude_none=True,
-        )
-        # override the default output from pydantic by calling `to_dict()` of layer_thickness_mm
-        if self.layer_thickness_mm:
-            _dict['layer_thickness_mm'] = self.layer_thickness_mm.to_dict()
-        return _dict
-
-    @classmethod
-    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
-        """Create an instance of SceneTypeModel from a dict"""
-        if obj is None:
+    def to_dict(self) -> Optional[Union[Dict[str, Any], FPSFile, Manual]]:
+        """Returns the dict representation of the actual instance"""
+        if self.actual_instance is None:
             return None
 
-        if not isinstance(obj, dict):
-            return cls.model_validate(obj)
+        if hasattr(self.actual_instance, "to_dict") and callable(self.actual_instance.to_dict):
+            return self.actual_instance.to_dict()
+        else:
+            # primitive type
+            return self.actual_instance
 
-        _obj = cls.model_validate({
-            "machine_type": obj.get("machine_type"),
-            "material_code": obj.get("material_code"),
-            "print_setting": obj.get("print_setting"),
-            "layer_thickness_mm": SceneTypeModelLayerThicknessMm.from_dict(obj["layer_thickness_mm"]) if obj.get("layer_thickness_mm") is not None else None
-        })
-        return _obj
+    def to_str(self) -> str:
+        """Returns the string representation of the actual instance"""
+        return pprint.pformat(self.model_dump())
 
 

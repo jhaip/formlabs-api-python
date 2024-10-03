@@ -14,10 +14,10 @@
 
 import unittest
 
-from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from formlabs_local_api.models.manual import Manual
 
-class TestSceneTypeModel(unittest.TestCase):
-    """SceneTypeModel unit test stubs"""
+class TestManual(unittest.TestCase):
+    """Manual unit test stubs"""
 
     def setUp(self):
         pass
@@ -25,34 +25,32 @@ class TestSceneTypeModel(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> SceneTypeModel:
-        """Test SceneTypeModel
+    def make_instance(self, include_optional) -> Manual:
+        """Test Manual
             include_optional is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `SceneTypeModel`
+        # uncomment below to create an instance of `Manual`
         """
-        model = SceneTypeModel()
+        model = Manual()
         if include_optional:
-            return SceneTypeModel(
+            return Manual(
                 machine_type = '',
                 material_code = '',
                 print_setting = '',
                 layer_thickness_mm = None,
-                custom_print_setting_id = '',
-                fps_file = ''
+                custom_print_setting_id = ''
             )
         else:
-            return SceneTypeModel(
+            return Manual(
                 machine_type = '',
                 material_code = '',
                 layer_thickness_mm = None,
-                fps_file = '',
         )
         """
 
-    def testSceneTypeModel(self):
-        """Test SceneTypeModel"""
+    def testManual(self):
+        """Test Manual"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

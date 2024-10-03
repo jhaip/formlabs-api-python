@@ -14,10 +14,10 @@
 
 import unittest
 
-from formlabs_local_api.models.scene_type_model_layer_thickness_mm import SceneTypeModelLayerThicknessMm
+from formlabs_local_api.models.fps_file import FPSFile
 
-class TestSceneTypeModelLayerThicknessMm(unittest.TestCase):
-    """SceneTypeModelLayerThicknessMm unit test stubs"""
+class TestFPSFile(unittest.TestCase):
+    """FPSFile unit test stubs"""
 
     def setUp(self):
         pass
@@ -25,24 +25,26 @@ class TestSceneTypeModelLayerThicknessMm(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def make_instance(self, include_optional) -> SceneTypeModelLayerThicknessMm:
-        """Test SceneTypeModelLayerThicknessMm
+    def make_instance(self, include_optional) -> FPSFile:
+        """Test FPSFile
             include_optional is a boolean, when False only required
             params are included, when True both required and
             optional params are included """
-        # uncomment below to create an instance of `SceneTypeModelLayerThicknessMm`
+        # uncomment below to create an instance of `FPSFile`
         """
-        model = SceneTypeModelLayerThicknessMm()
+        model = FPSFile()
         if include_optional:
-            return SceneTypeModelLayerThicknessMm(
+            return FPSFile(
+                fps_file = ''
             )
         else:
-            return SceneTypeModelLayerThicknessMm(
+            return FPSFile(
+                fps_file = '',
         )
         """
 
-    def testSceneTypeModelLayerThicknessMm(self):
-        """Test SceneTypeModelLayerThicknessMm"""
+    def testFPSFile(self):
+        """Test FPSFile"""
         # inst_req_only = self.make_instance(include_optional=False)
         # inst_req_and_optional = self.make_instance(include_optional=True)
 

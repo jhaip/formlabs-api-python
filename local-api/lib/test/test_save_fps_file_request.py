@@ -12,132 +12,41 @@
 """  # noqa: E501
 
 
-from __future__ import annotations
-import json
-import pprint
-from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr, ValidationError, field_validator
-from typing import Any, List, Optional, Union
-from pydantic import StrictStr, Field
-from typing import Union, List, Set, Optional, Dict
-from typing_extensions import Literal, Self
+import unittest
 
-SCENETYPEMODELLAYERTHICKNESSMM_ONE_OF_SCHEMAS = ["float", "str"]
+from formlabs_local_api.models.save_fps_file_request import SaveFpsFileRequest
 
-class SceneTypeModelLayerThicknessMm(BaseModel):
-    """
-    The slice thickness of the scene
-    """
-    # data type: str
-    oneof_schema_1_validator: Optional[StrictStr] = None
-    # data type: float
-    oneof_schema_2_validator: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, description="Layer thickness in millimeters")
-    actual_instance: Optional[Union[float, str]] = None
-    one_of_schemas: Set[str] = { "float", "str" }
+class TestSaveFpsFileRequest(unittest.TestCase):
+    """SaveFpsFileRequest unit test stubs"""
 
-    model_config = ConfigDict(
-        validate_assignment=True,
-        protected_namespaces=(),
-    )
+    def setUp(self):
+        pass
 
+    def tearDown(self):
+        pass
 
-    def __init__(self, *args, **kwargs) -> None:
-        if args:
-            if len(args) > 1:
-                raise ValueError("If a position argument is used, only 1 is allowed to set `actual_instance`")
-            if kwargs:
-                raise ValueError("If a position argument is used, keyword arguments cannot be used.")
-            super().__init__(actual_instance=args[0])
+    def make_instance(self, include_optional) -> SaveFpsFileRequest:
+        """Test SaveFpsFileRequest
+            include_optional is a boolean, when False only required
+            params are included, when True both required and
+            optional params are included """
+        # uncomment below to create an instance of `SaveFpsFileRequest`
+        """
+        model = SaveFpsFileRequest()
+        if include_optional:
+            return SaveFpsFileRequest(
+                file = 'jUR,rZ#UM/?R,Fp^l6$ARj.fps'
+            )
         else:
-            super().__init__(**kwargs)
+            return SaveFpsFileRequest(
+                file = 'jUR,rZ#UM/?R,Fp^l6$ARj.fps',
+        )
+        """
 
-    @field_validator('actual_instance')
-    def actual_instance_must_validate_oneof(cls, v):
-        instance = SceneTypeModelLayerThicknessMm.model_construct()
-        error_messages = []
-        match = 0
-        # validate data type: str
-        try:
-            instance.oneof_schema_1_validator = v
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-        # validate data type: float
-        try:
-            instance.oneof_schema_2_validator = v
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-        if match > 1:
-            # more than 1 match
-            raise ValueError("Multiple matches found when setting `actual_instance` in SceneTypeModelLayerThicknessMm with oneOf schemas: float, str. Details: " + ", ".join(error_messages))
-        elif match == 0:
-            # no match
-            raise ValueError("No match found when setting `actual_instance` in SceneTypeModelLayerThicknessMm with oneOf schemas: float, str. Details: " + ", ".join(error_messages))
-        else:
-            return v
+    def testSaveFpsFileRequest(self):
+        """Test SaveFpsFileRequest"""
+        # inst_req_only = self.make_instance(include_optional=False)
+        # inst_req_and_optional = self.make_instance(include_optional=True)
 
-    @classmethod
-    def from_dict(cls, obj: Union[str, Dict[str, Any]]) -> Self:
-        return cls.from_json(json.dumps(obj))
-
-    @classmethod
-    def from_json(cls, json_str: str) -> Self:
-        """Returns the object represented by the json string"""
-        instance = cls.model_construct()
-        error_messages = []
-        match = 0
-
-        # deserialize data into str
-        try:
-            # validation
-            instance.oneof_schema_1_validator = json.loads(json_str)
-            # assign value to actual_instance
-            instance.actual_instance = instance.oneof_schema_1_validator
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-        # deserialize data into float
-        try:
-            # validation
-            instance.oneof_schema_2_validator = json.loads(json_str)
-            # assign value to actual_instance
-            instance.actual_instance = instance.oneof_schema_2_validator
-            match += 1
-        except (ValidationError, ValueError) as e:
-            error_messages.append(str(e))
-
-        if match > 1:
-            # more than 1 match
-            raise ValueError("Multiple matches found when deserializing the JSON string into SceneTypeModelLayerThicknessMm with oneOf schemas: float, str. Details: " + ", ".join(error_messages))
-        elif match == 0:
-            # no match
-            raise ValueError("No match found when deserializing the JSON string into SceneTypeModelLayerThicknessMm with oneOf schemas: float, str. Details: " + ", ".join(error_messages))
-        else:
-            return instance
-
-    def to_json(self) -> str:
-        """Returns the JSON representation of the actual instance"""
-        if self.actual_instance is None:
-            return "null"
-
-        if hasattr(self.actual_instance, "to_json") and callable(self.actual_instance.to_json):
-            return self.actual_instance.to_json()
-        else:
-            return json.dumps(self.actual_instance)
-
-    def to_dict(self) -> Optional[Union[Dict[str, Any], float, str]]:
-        """Returns the dict representation of the actual instance"""
-        if self.actual_instance is None:
-            return None
-
-        if hasattr(self.actual_instance, "to_dict") and callable(self.actual_instance.to_dict):
-            return self.actual_instance.to_dict()
-        else:
-            # primitive type
-            return self.actual_instance
-
-    def to_str(self) -> str:
-        """Returns the string representation of the actual instance"""
-        return pprint.pformat(self.model_dump())
-
-
+if __name__ == '__main__':
+    unittest.main()

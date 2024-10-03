@@ -12,49 +12,88 @@
 """  # noqa: E501
 
 
-import unittest
+from __future__ import annotations
+import pprint
+import re  # noqa: F401
+import json
 
-from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
+from formlabs_local_api.models.manual_layer_thickness_mm import ManualLayerThicknessMm
+from typing import Optional, Set
+from typing_extensions import Self
 
-class TestSceneTypeModel(unittest.TestCase):
-    """SceneTypeModel unit test stubs"""
+class Manual(BaseModel):
+    """
+    Manual
+    """ # noqa: E501
+    machine_type: StrictStr = Field(description="The machine type of the scene")
+    material_code: StrictStr = Field(description="The material code of the scene")
+    print_setting: Optional[StrictStr] = Field(default=None, description="The print setting of the scene")
+    layer_thickness_mm: ManualLayerThicknessMm
+    custom_print_setting_id: Optional[StrictStr] = Field(default=None, description="The ID of the custom print setting used, if any.")
+    __properties: ClassVar[List[str]] = ["machine_type", "material_code", "print_setting", "layer_thickness_mm", "custom_print_setting_id"]
 
-    def setUp(self):
-        pass
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
-    def tearDown(self):
-        pass
 
-    def make_instance(self, include_optional) -> SceneTypeModel:
-        """Test SceneTypeModel
-            include_optional is a boolean, when False only required
-            params are included, when True both required and
-            optional params are included """
-        # uncomment below to create an instance of `SceneTypeModel`
+    def to_str(self) -> str:
+        """Returns the string representation of the model using alias"""
+        return pprint.pformat(self.model_dump(by_alias=True))
+
+    def to_json(self) -> str:
+        """Returns the JSON representation of the model using alias"""
+        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Optional[Self]:
+        """Create an instance of Manual from a JSON string"""
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return the dictionary representation of the model using alias.
+
+        This has the following differences from calling pydantic's
+        `self.model_dump(by_alias=True)`:
+
+        * `None` is only added to the output dict for nullable fields that
+          were set at model initialization. Other fields with value `None`
+          are ignored.
         """
-        model = SceneTypeModel()
-        if include_optional:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                print_setting = '',
-                layer_thickness_mm = None,
-                custom_print_setting_id = '',
-                fps_file = ''
-            )
-        else:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                layer_thickness_mm = None,
-                fps_file = '',
+        excluded_fields: Set[str] = set([
+        ])
+
+        _dict = self.model_dump(
+            by_alias=True,
+            exclude=excluded_fields,
+            exclude_none=True,
         )
-        """
+        # override the default output from pydantic by calling `to_dict()` of layer_thickness_mm
+        if self.layer_thickness_mm:
+            _dict['layer_thickness_mm'] = self.layer_thickness_mm.to_dict()
+        return _dict
 
-    def testSceneTypeModel(self):
-        """Test SceneTypeModel"""
-        # inst_req_only = self.make_instance(include_optional=False)
-        # inst_req_and_optional = self.make_instance(include_optional=True)
+    @classmethod
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+        """Create an instance of Manual from a dict"""
+        if obj is None:
+            return None
 
-if __name__ == '__main__':
-    unittest.main()
+        if not isinstance(obj, dict):
+            return cls.model_validate(obj)
+
+        _obj = cls.model_validate({
+            "machine_type": obj.get("machine_type"),
+            "material_code": obj.get("material_code"),
+            "print_setting": obj.get("print_setting"),
+            "layer_thickness_mm": ManualLayerThicknessMm.from_dict(obj["layer_thickness_mm"]) if obj.get("layer_thickness_mm") is not None else None,
+            "custom_print_setting_id": obj.get("custom_print_setting_id")
+        })
+        return _obj
+
+

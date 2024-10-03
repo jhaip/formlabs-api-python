@@ -42,11 +42,7 @@ class TestListMaterials200ResponsePrinterTypesInner(unittest.TestCase):
                         material_settings = [
                             formlabs_local_api.models.list_materials_200_response_printer_types_inner_materials_inner_material_settings_inner.listMaterials_200_response_printer_types_inner_materials_inner_material_settings_inner(
                                 label = '', 
-                                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel(
-                                    machine_type = '', 
-                                    material_code = '', 
-                                    print_setting = '', 
-                                    layer_thickness_mm = null, ), )
+                                scene_settings = formlabs_local_api.models.scene_type_model.SceneTypeModel(), )
                             ], )
                     ]
             )

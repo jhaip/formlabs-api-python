@@ -12,49 +12,76 @@
 """  # noqa: E501
 
 
-import unittest
+from __future__ import annotations
+import pprint
+import re  # noqa: F401
+import json
 
-from formlabs_local_api.models.scene_type_model import SceneTypeModel
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
+from typing import Any, ClassVar, Dict, List
+from typing import Optional, Set
+from typing_extensions import Self
 
-class TestSceneTypeModel(unittest.TestCase):
-    """SceneTypeModel unit test stubs"""
+class FPSFile(BaseModel):
+    """
+    FPSFile
+    """ # noqa: E501
+    fps_file: StrictStr = Field(description="The full path to the .FPS file")
+    __properties: ClassVar[List[str]] = ["fps_file"]
 
-    def setUp(self):
-        pass
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
-    def tearDown(self):
-        pass
 
-    def make_instance(self, include_optional) -> SceneTypeModel:
-        """Test SceneTypeModel
-            include_optional is a boolean, when False only required
-            params are included, when True both required and
-            optional params are included """
-        # uncomment below to create an instance of `SceneTypeModel`
+    def to_str(self) -> str:
+        """Returns the string representation of the model using alias"""
+        return pprint.pformat(self.model_dump(by_alias=True))
+
+    def to_json(self) -> str:
+        """Returns the JSON representation of the model using alias"""
+        # TODO: pydantic v2: use .model_dump_json(by_alias=True, exclude_unset=True) instead
+        return json.dumps(self.to_dict())
+
+    @classmethod
+    def from_json(cls, json_str: str) -> Optional[Self]:
+        """Create an instance of FPSFile from a JSON string"""
+        return cls.from_dict(json.loads(json_str))
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Return the dictionary representation of the model using alias.
+
+        This has the following differences from calling pydantic's
+        `self.model_dump(by_alias=True)`:
+
+        * `None` is only added to the output dict for nullable fields that
+          were set at model initialization. Other fields with value `None`
+          are ignored.
         """
-        model = SceneTypeModel()
-        if include_optional:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                print_setting = '',
-                layer_thickness_mm = None,
-                custom_print_setting_id = '',
-                fps_file = ''
-            )
-        else:
-            return SceneTypeModel(
-                machine_type = '',
-                material_code = '',
-                layer_thickness_mm = None,
-                fps_file = '',
+        excluded_fields: Set[str] = set([
+        ])
+
+        _dict = self.model_dump(
+            by_alias=True,
+            exclude=excluded_fields,
+            exclude_none=True,
         )
-        """
+        return _dict
 
-    def testSceneTypeModel(self):
-        """Test SceneTypeModel"""
-        # inst_req_only = self.make_instance(include_optional=False)
-        # inst_req_and_optional = self.make_instance(include_optional=True)
+    @classmethod
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
+        """Create an instance of FPSFile from a dict"""
+        if obj is None:
+            return None
 
-if __name__ == '__main__':
-    unittest.main()
+        if not isinstance(obj, dict):
+            return cls.model_validate(obj)
+
+        _obj = cls.model_validate({
+            "fps_file": obj.get("fps_file")
+        })
+        return _obj
+
+

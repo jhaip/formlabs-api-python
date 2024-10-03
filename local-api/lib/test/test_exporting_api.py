@@ -33,6 +33,13 @@ class TestExportingApi(unittest.TestCase):
         """
         pass
 
+    def test_save_fps_file(self) -> None:
+        """Test case for save_fps_file
+
+        Save FPS file
+        """
+        pass
+
     def test_save_screenshot(self) -> None:
         """Test case for save_screenshot
 
