@@ -6,11 +6,13 @@ Example Usage:
 python3 examples/speedrun.py test.form --reduce_wiping --reduce_exposure
 
 Known Limitations:
-- Changing wiping behavior does not change the estimated print time, although it would increase actual print times
+- Changing wiping behavior does not change the estimated print time, although it would decrease actual print times
 - Only tested on Form 4 printers. Other printer types should work, but may have less accurate print times.
 
 Written by Jacob Haip
 """
+import formlabs_local_api_minimal as formlabs
+import requests
 import argparse
 import json
 import os
@@ -20,7 +22,6 @@ import difflib
 import pathlib
 import itertools
 import uuid
-import formlabs_local_api as formlabs
 
 
 # pathToPreformServer = None
@@ -40,9 +41,21 @@ def main():
     with formlabs.PreFormApi.start_preform_server(pathToPreformServer=pathToPreformServer) as preform:
         # Load the base .form file and get the estimated print time
         print(f"Loading form file {args.form_file}")
-        preform.api.load_form_post(formlabs.LoadFormPostRequest(file=args.form_file))
+        load_form_response = requests.request(
+            "POST",
+            "http://localhost:44388/load-form/",
+            json={
+                "file": args.form_file,
+            },
+        )
+        load_form_response.raise_for_status()
         print("Estimating print time")
-        base_estimated_print_time_s = preform.api.scene_estimate_print_time_post().total_print_time_s
+        estimate_print_time_response = requests.request(
+            "GET",
+            f"http://localhost:44388/scene/estimate-print-time/",
+        )
+        estimate_print_time_response.raise_for_status()
+        base_estimated_print_time_s = estimate_print_time_response.json()["total_print_time_s"]
 
         base_settings_path = None
         if args.settings_file:
@@ -50,7 +63,14 @@ def main():
         else:
             print("Exacting initial settings from form file")
             base_settings_path = os.path.abspath("base_settings.fps")
-            preform.api.scene_save_fps_file_post(formlabs.SceneSaveFpsFilePostRequest(file=base_settings_path))
+            save_fps_response = requests.request(
+                "POST",
+                "http://localhost:44388/scene/save-fps-file/",
+                json={
+                    "file": base_settings_path,
+                },
+            )
+            save_fps_response.raise_for_status()
 
         print("Loading initial settings file")
         with open(base_settings_path, 'r') as f:
@@ -67,21 +87,46 @@ def main():
             with open(settings_file, 'w') as f:
                 json.dump(variation.settings, f, indent=4)
 
-            preform.api.scene_put(formlabs.SceneTypeModel({
-                "fps_file": os.path.abspath(settings_file)
-            }))
+            scene_put_response = requests.request(
+                "PUT",
+                "http://localhost:44388/scene/",
+                json={
+                    "fps_file": os.path.abspath(settings_file),
+                },
+            )
+            scene_put_response.raise_for_status()
             print("Estimating print time")
-            estimated_print_time_s = preform.api.scene_estimate_print_time_post().total_print_time_s
+            estimate_print_time_response = requests.request(
+                "GET",
+                f"http://localhost:44388/scene/estimate-print-time/",
+            )
+            estimate_print_time_response.raise_for_status()
+            estimated_print_time_s = estimate_print_time_response.json()["total_print_time_s"]
             base_form_file_name_without_extension = os.path.splitext(args.form_file)[0]
             job_name = f"{base_form_file_name_without_extension}{variation.name}"
             variation_form_file_name = f"{job_name}.form"
             print(f"saving {variation_form_file_name}")
-            preform.api.scene_save_form_post(formlabs.LoadFormPostRequest(file=os.path.abspath(variation_form_file_name)))
+            save_form_response = requests.request(
+                "POST",
+                "http://localhost:44388/scene/save-form/",
+                json={
+                    "file": os.path.abspath(variation_form_file_name),
+                },
+            )
+            save_form_response.raise_for_status()
 
             if args.printers:
                 printer_id = args.printers[idx % len(args.printers)]
                 print(f"Slicing and uploading job {job_name} to printer {printer_id}...")
-                preform.api.scene_print_post(formlabs.models.ScenePrintPostRequest(printer=printer_id, job_name=job_name))
+                print_response = requests.request(
+                    "POST",
+                    "http://localhost:44388/scene/print/",
+                    json={
+                        "printer": printer_id,
+                        "job_name": job_name,
+                    },
+                )
+                print_response.raise_for_status()
                 print(f"Job upload complete")
 
             # Record report data
