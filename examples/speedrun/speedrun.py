@@ -34,13 +34,17 @@ import uuid
 #     sys.exit(1)
 pathToPreformServer = "/Users/haip/code/Preform/cmake-build-release/app/PreFormServer/output/PreFormServer.app/Contents/MacOS/PreFormServer"
 
+# Terminal colors
+HEADER = '\033[95m'
+GREEN = '\033[92m'
+ENDC = '\033[0m'
+
 def main():
     args = parse_args()
 
     report_data = []
     with formlabs.PreFormApi.start_preform_server(pathToPreformServer=pathToPreformServer) as preform:
         # Load the base .form file and get the estimated print time
-        print(f"Loading form file {args.form_file}")
         load_form_response = requests.request(
             "POST",
             "http://localhost:44388/load-form/",
@@ -49,9 +53,8 @@ def main():
             },
         )
         load_form_response.raise_for_status()
-        print("Estimating print time")
         estimate_print_time_response = requests.request(
-            "GET",
+            "POST",
             f"http://localhost:44388/scene/estimate-print-time/",
         )
         estimate_print_time_response.raise_for_status()
@@ -76,16 +79,17 @@ def main():
         with open(base_settings_path, 'r') as f:
             base_settings = json.load(f)
 
-        print("Generating variations...")
+        print("\nGenerating variations...")
         variations = generate_variations(base_settings, args)
         print(f"Generated {len(variations)} variations")
 
         for idx, variation in enumerate(variations):
-            print(f"Running variation {idx+1}/{len(variations)}: {variation.name}")
+            print(f"\n{HEADER}Analyzing variation {idx+1}/{len(variations)}: {variation.name}{ENDC}")
 
             settings_file = f"settings_{variation.name}.fps"
             with open(settings_file, 'w') as f:
                 json.dump(variation.settings, f, indent=4)
+            print(f"saved {os.path.basename(settings_file)}")
 
             scene_put_response = requests.request(
                 "PUT",
@@ -95,9 +99,8 @@ def main():
                 },
             )
             scene_put_response.raise_for_status()
-            print("Estimating print time")
             estimate_print_time_response = requests.request(
-                "GET",
+                "POST",
                 f"http://localhost:44388/scene/estimate-print-time/",
             )
             estimate_print_time_response.raise_for_status()
@@ -105,7 +108,6 @@ def main():
             base_form_file_name_without_extension = os.path.splitext(args.form_file)[0]
             job_name = f"{base_form_file_name_without_extension}{variation.name}"
             variation_form_file_name = f"{job_name}.form"
-            print(f"saving {variation_form_file_name}")
             save_form_response = requests.request(
                 "POST",
                 "http://localhost:44388/scene/save-form/",
@@ -114,6 +116,7 @@ def main():
                 },
             )
             save_form_response.raise_for_status()
+            print(f"saved {os.path.basename(variation_form_file_name)}")
 
             if args.printers:
                 printer_id = args.printers[idx % len(args.printers)]
@@ -130,16 +133,22 @@ def main():
                 print(f"Job upload complete")
 
             # Record report data
+            print_time_decrease_percentage = 100 * (base_estimated_print_time_s - estimated_print_time_s) / base_estimated_print_time_s
             report_data.append({
                 'variation_name': variation.name,
                 'estimated_print_time_s': estimated_print_time_s,
-                'print_time_decrease_percentage': (base_estimated_print_time_s - estimated_print_time_s) / base_estimated_print_time_s,
+                'print_time_decrease_percentage': print_time_decrease_percentage,
                 'settings_file': settings_file,
+                'form_file': variation_form_file_name,
                 'diffs': get_settings_diff(base_settings, variation.settings)
             })
+            print(f"Result: {GREEN}{print_time_decrease_percentage:.1f}% print time decrease{ENDC}")
 
-            # TODO: downselect to N variations based on a spread of print time decrease
-            generate_report(report_data, args.report_file)
+        # TODO: downselect to N variations based on a spread of print time decrease
+        generate_report(report_data, args.report_file)
+        # Run pandoc to convert markdown to pdf
+        os.system(f"pandoc -s -V geometry:margin=1in {args.report_file} -o {args.report_file.replace('.md', '.pdf')}")
+        print(f"\nDone. Result summary written to {args.report_file}")
 
 def parse_args():
     parser = argparse.ArgumentParser(description="3D Print Job Speed Optimization Tool")
@@ -284,18 +293,26 @@ def get_settings_diff(base_settings, new_settings):
 
 def generate_report(report_data, report_file):
     with open(report_file, 'w') as f:
+        f.write("# speedrun.py Results\n")
+        f.write("\n")
+        f.write("## Summary\n")
         for data in report_data:
-            print_time_decrease_percentage = data['print_time_decrease_percentage'] * 100
-            estimated_print_time_s = data['estimated_print_time_s']
-            f.write(f"# Variation: {data['variation_name']} [{print_time_decrease_percentage:.1f}% print time decrease]\n")
-            f.write(f"- Estimated Print Time: {estimated_print_time_s:.1f} seconds\n")
+            f.write(f"### {data['variation_name']}: {data['print_time_decrease_percentage']:.1f}% print time decrease\n")
+            f.write(f"- Estimated Print Time: {data['estimated_print_time_s']:.1f} seconds\n")
             f.write(f"- Settings File: {data['settings_file']}\n")
+            f.write(f"- .form File: {os.path.basename(data['form_file'])}\n")
+            f.write("\n")
+        f.write("## Expanded Results\n")
+        for data in report_data:
+            f.write(f"## {data['variation_name']} [{data['print_time_decrease_percentage']:.1f}% print time decrease]\n")
+            f.write(f"- Estimated Print Time: {data['estimated_print_time_s']:.1f} seconds\n")
+            f.write(f"- Settings File: {data['settings_file']}\n")
+            f.write(f"- .form File: {os.path.basename(data['form_file'])}\n")
             f.write("- Settings Differences:\n")
             f.write("```\n")
             f.write(f"{data['diffs']}\n")
             f.write("```\n")
             f.write("\n")
-    print(f"Result summary written to {report_file}")
 
 if __name__ == '__main__':
     main()
