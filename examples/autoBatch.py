@@ -4,24 +4,21 @@ import sys
 import time
 import pathlib
 import shutil
-import formlabs
+import requests
 from datetime import datetime
 from dataclasses import dataclass
 from enum import Enum
-from formlabs.models.scene_auto_orient_post_request import SceneAutoOrientPostRequest
-from formlabs.models.scene_auto_layout_post_request import SceneAutoLayoutPostRequest
-from formlabs.models.scene_type_model import SceneTypeModel
-from formlabs.models.scene_type_model_layer_thickness import SceneTypeModelLayerThicknessMm
-from formlabs.models.models_selection_model import ModelsSelectionModel
-from formlabs.models.load_form_post_request import LoadFormPostRequest
+import formlabs_local_api_minimal as formlabs
 
+USERNAME = "username"
+PASSWORD = "password"
 
-FORMLABS_MATERIAL_SELECTION = SceneTypeModel(
-    machine_type="FRMB-3-0",
-    material_code="FLGPGR04", # TODO: change this
-    layer_thickness_mm=SceneTypeModelLayerThicknessMm("0.1"),
-    print_setting="DEFAULT", # TODO: change this
-)
+FORMLABS_MATERIAL_SELECTION = {
+    "machine_type": "FRMB-3-0",
+    "material_code": "FLGPGR04",
+    "layer_thickness_mm": 0.1,
+    "print_setting": "DEFAULT",
+}
 
 class OrderType(Enum):
     GENERIC = 1
@@ -44,15 +41,15 @@ class BatchResult:
     part_quantity_in_this_print: int
 
 PATH_TO_INPUT_FOLDERS = {
-    OrderType.GENERIC: r"C:\Users\haip_formlabs\Desktop\Demo\2. Approved",
+    OrderType.GENERIC: r"/Users/haip/Documents/Orders/2. Approved",
 }
 PATH_TO_OUTPUT_FOLDERS = {
-    OrderType.GENERIC: r"C:\Users\haip_formlabs\Desktop\Demo\3. Printing",
+    OrderType.GENERIC: r"/Users/haip/Documents/Orders/3. Printing",
 }
 CACHE_OF_INPUT_FOLDERS = {
     OrderType.GENERIC: set(),
 }
-PATH_TO_FOLDER_FOR_SAVING_PRINT_FILES = r"C:\Users\haip_formlabs\Desktop\Job File Output"
+PATH_TO_FOLDER_FOR_SAVING_PRINT_FILES = r"/Users/haip/Documents/Orders/Job File Output"
 DELAY_BETWEEN_NEW_ORDER_FOLDER_CHECKS_SECONDS = 2
 
 pathToPreformServer = None
@@ -78,7 +75,7 @@ def check_input_folder(order_type: OrderType):
 def process_order(order_folder_path, order_type: OrderType):
     print("Processing order", order_folder_path, order_type)
     order_parameters = parse_order_parameters(order_folder_path, order_type)
-    print("Parsed order parameters", order_parameters)
+    # print("Parsed order parameters", order_parameters)
     if order_parameters is None:
         print("Unable to parse order folder name, skipping order")
         return
@@ -133,57 +130,109 @@ def process_order_models(order_parameters: OrderParameters) -> list[BatchResult]
     batch_results: list[BatchResult] = []
     batch_has_unsaved_changed = False
 
-    def clear_scene(preform):
+    def clear_scene():
         nonlocal batch_has_unsaved_changed, batch_results
         print("Clearing scene")
-        preform.api.scene_post(FORMLABS_MATERIAL_SELECTION)
+        response = requests.request(
+            "POST",
+            "http://localhost:44388/scene/",
+            json=FORMLABS_MATERIAL_SELECTION,
+        )
+        response.raise_for_status()
         batch_has_unsaved_changed = False
         batch_results.append(BatchResult(0))
     
-    def save_batch_form(preform):
+    def save_batch_form():
         nonlocal current_batch
         save_path = os.path.join(PATH_TO_FOLDER_FOR_SAVING_PRINT_FILES, f"{order_parameters.order_id}_batch{current_batch}.form")
         print(f"Saving batch {current_batch} to {save_path}")
-        preform.api.scene_save_form_post(LoadFormPostRequest(file=save_path))
+        save_form_response = requests.request(
+            "POST",
+            "http://localhost:44388/scene/save-form/",
+            json={
+                "file": save_path,
+            },
+        )
+        save_form_response.raise_for_status()
         print("Batch saved")
         # Upload batch to Fleet Control as well
         print("Uploading batch to Fleet Control")
-        preform.api.login_post(formlabs.models.LoginPostRequest(formlabs.models.UsernameAndPassword(username="hype55", password="hype55")))
-        preform.api.scene_print_post(formlabs.models.ScenePrintPostRequest(printer="6e0e46db-5fca-49f0-8024-599eacdd8437", job_name=f"{order_parameters.order_id}_batch{current_batch}.form"))
+        login_response = requests.request(
+            "POST",
+            "http://localhost:44388/login/",
+            json={
+                "username": USERNAME,
+                "password": PASSWORD,
+            },
+        )
+        login_response.raise_for_status()
+        try:
+            print_response = requests.request(
+                "POST",
+                "http://localhost:44388/scene/print/",
+                json={
+                    "printer": "6e0e46db-5fca-49f0-8024-599eacdd8437",
+                    "job_name": f"{order_parameters.order_id}_batch{current_batch}",
+                },
+            )
+            print_response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            print("Error uploading to Fleet Control:", e)
+            print(e.response.text)
         current_batch += 1
 
     with formlabs.PreFormApi.start_preform_server(pathToPreformServer=pathToPreformServer) as preform:
-        clear_scene(preform)
+        clear_scene()
         for stl_file_and_quantity in order_parameters.stl_files_and_quantities:
             qty_to_print = stl_file_and_quantity.quantity
             while qty_to_print >= 1:
                 print(f"Importing model {stl_file_and_quantity.filename} qty {qty_to_print}/{stl_file_and_quantity.quantity}")
-                new_model = preform.api.scene_import_model_post({"file": os.path.join(order_parameters.order_folder_path, stl_file_and_quantity.filename)})
-                print(f"Auto orienting {new_model.id}")
-                preform.api.scene_auto_orient_post(
-                    SceneAutoOrientPostRequest(models=ModelsSelectionModel([new_model.id]), mode="DENTAL", tilt=0)
+                import_model_response = requests.request(
+                    "POST",
+                    "http://localhost:44388/scene/import-model/",
+                    json={
+                        "file": os.path.join(order_parameters.order_folder_path, stl_file_and_quantity.filename),
+                        "repair_behavior": "IGNORE",
+                    },
                 )
-                try:
-                    print(f"Auto layouting all")
-                    preform.api.scene_auto_layout_post_with_http_info(
-                        SceneAutoLayoutPostRequest(models=ModelsSelectionModel("ALL"))
+                import_model_response.raise_for_status()
+                new_model_id = import_model_response.json()["id"]
+                print(f"Auto orienting {new_model_id}")
+                auto_orient_response = requests.request(
+                    "POST",
+                    "http://localhost:44388/scene/auto-orient/",
+                    json={
+                        "models": [new_model_id],
+                        "mode": "DENTAL",
+                        "tilt": 0,
+                    },
+                )
+                auto_orient_response.raise_for_status()
+                print(f"Auto layouting all")
+                layout_response = requests.request(
+                    "POST",
+                    "http://localhost:44388/scene/auto-layout/",
+                    json={
+                        "models": "ALL",
+                    },
+                )
+                if layout_response.status_code != 200:
+                    print("Not all models can fit, removing model")
+                    delete_response = requests.request(
+                        "DELETE",
+                        f"http://localhost:44388/scene/models/{str(new_model_id)}/",
                     )
+                    delete_response.raise_for_status()
+                    save_batch_form()
+                    clear_scene()
+                else:
                     batch_has_unsaved_changed = True
                     batch_results[-1].part_quantity_in_this_print += 1
                     qty_to_print -= 1
                     print(f"Model {stl_file_and_quantity.filename} added to scene")
-                except formlabs.exceptions.ApiException as e:
-                    print("Not all models can fit, removing model")
-                    preform.api.scene_models_id_delete(str(new_model.id))
-                    save_batch_form(preform)
-                    clear_scene(preform)
-                except Exception as e:
-                    print("Error during auto layout")
-                    print(e)
-                    raise e
 
         if batch_has_unsaved_changed:
-            save_batch_form(preform)
+            save_batch_form()
 
     return batch_results
 
