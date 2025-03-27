@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Formlabs Print Dialog</title>
+    <link rel="stylesheet" href="static/css/style.css" />
+  </head>
+  <body>
+    <h1>Formlabs Print Dialog</h1>
+
+    <!-- Login / Logout Section -->
+    <div id="login-section">
+      <div id="login-form">
+        <input type="text" id="username" placeholder="Username" />
+        <input type="password" id="password" placeholder="Password" />
+        <button id="login-button">Login</button>
+      </div>
+      <div id="logout-section" style="display: none;">
+        <span id="logged-in-user"></span>
+        <button id="logout-button">Logout</button>
+      </div>
+    </div>
+
+    <!-- File Upload Section -->
+    <div id="upload-section">
+      <h2>Upload STL File</h2>
+      <input type="file" id="stl-file" accept=".stl" />
+    </div>
+
+    <!-- Printer Selection and Settings -->
+    <div id="printer-selection">
+      <h2>Printer Settings</h2>
+      <label for="printer-type">Printer Type:</label>
+      <select id="printer-type"></select>
+      <br />
+      <label for="printer">Printer:</label>
+      <select id="printer"></select>
+      <br />
+      <label for="print-setting">Print Setting:</label>
+      <select id="print-setting"></select>
+      <br />
+      <label for="job-name">Job Name:</label>
+      <input type="text" id="job-name" value="Test Job" />
+      <br />
+      <button id="add-printer-ip-button">Add Printer by IP</button>
+      <button id="discover-printers-button">Discover Printers</button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div id="action-buttons">
+      <button id="upload-queue-button">Upload to Queue</button>
+      <button id="print-now-button">Print Now</button>
+    </div>
+
+    <!-- Slicing Progress Section -->
+    <div id="progress-section">
+      <h2>Slicing Progress</h2>
+      <progress id="slicing-progress" value="0" max="100" style="display: none;"></progress>
+      <div id="progress-text"></div>
+    </div>
+
+    <script src="static/js/main.js"></script>
+  </body>
+</html>
